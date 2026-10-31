@@ -1,0 +1,30 @@
+[theme]
+base = "light"
+primaryColor = "#126B66"
+backgroundColor = "#F3F6F7"
+secondaryBackgroundColor = "#E8EEF1"
+textColor = "#182A35"
+font = "sans-serif"
+baseFontSize = 16
+baseRadius = "0.5rem"
+buttonRadius = "0.4rem"
+borderColor = "#6C818C"
+showWidgetBorder = true
+yellowTextColor = "#8A530C"
+yellowBackgroundColor = "#FFF6E8"
+greenTextColor = "#126B49"
+greenBackgroundColor = "#EFF8F2"
+redTextColor = "#A42D3D"
+redBackgroundColor = "#FFF0F2"
+blueTextColor = "#175E89"
+blueBackgroundColor = "#EDF5FB"
+
+[browser]
+gatherUsageStats = false
+
+[client]
+toolbarMode = "minimal"
+
+[server]
+address = "127.0.0.1"
+headless = true

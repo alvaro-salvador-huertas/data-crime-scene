@@ -1,0 +1,42 @@
+/* Claves públicas de Streamlit y clases propias. Sin animaciones ni JS. */
+.st-key-dcs_root {max-width:1152px;margin-inline:auto;font-variant-numeric:tabular-nums;}
+:is(.st-key-dcs_root,.st-key-dcs_navigation,.st-key-dcs_guided_controls,.st-key-dcs_detective_controls,.st-key-dcs_lab_controls) {font-variant-numeric:tabular-nums;}
+.st-key-dcs_root :is(h1,h2,h3) {letter-spacing:-.025em;text-wrap:balance;line-height:1.2;overflow-wrap:anywhere;}
+.st-key-dcs_root h1 {font-size:clamp(2rem,4vw,3.2rem);line-height:1.1;}
+.st-key-dcs_root h2 {font-size:1.65rem;}
+.st-key-dcs_root h3 {font-size:1.25rem;}
+.st-key-dcs_root :is(p,li,label) {line-height:1.6;overflow-wrap:anywhere;}
+:is(.st-key-dcs_root,.st-key-dcs_navigation,.st-key-dcs_guided_controls,.st-key-dcs_detective_controls,.st-key-dcs_lab_controls) :is(button,a,input,textarea,select,[role="combobox"]):focus-visible {outline:3px solid #6945A0 !important;outline-offset:3px;}
+:is(.st-key-dcs_root,.st-key-dcs_navigation,.st-key-dcs_guided_controls,.st-key-dcs_detective_controls,.st-key-dcs_lab_controls) label:has(input:focus-visible) {outline:3px solid #6945A0;outline-offset:3px;border-radius:4px;}
+.st-key-dcs_root button {min-height:44px;}
+.st-key-dcs_root button:hover {border-color:#126B66;}
+.dcs-caption {font-size:14px;color:#4D6370;line-height:1.6;overflow-wrap:anywhere;margin:0 0 12px;}
+.brand-label {font-size:16px;font-weight:650;color:#126B66;margin:4px 0 20px;}
+.eyebrow {font-size:14px;font-weight:600;color:#126B66;margin-bottom:12px;}
+.hero-subtitle {font-size:20px;line-height:1.6;max-width:62ch;color:#4D6370;margin:0;}
+.hero-rule {border-bottom:1px solid #C7D3D9;padding-bottom:24px;margin-bottom:24px;}
+.case-number {font-size:14px;color:#4D6370;margin-bottom:8px;}
+.st-key-dcs_root .case-title {font-size:clamp(1.5rem,2.8vw,2rem);line-height:1.2;margin:0 0 12px;}
+.case-subtitle {color:#4D6370;max-width:75ch;}
+.brief-card {background:#FFFFFF;border:1px solid #6C818C;border-left:7px solid #126B66;border-radius:4px 12px 12px 4px;padding:24px;margin:12px 0 24px;}
+.brief-card dl {display:grid;grid-template-columns:1fr 1fr;gap:24px 32px;margin:0;}
+.brief-card dt {font-size:14px;color:#4D6370;margin-bottom:8px;}
+.brief-card dd {font-size:16px;color:#182A35;line-height:1.6;margin:0;overflow-wrap:anywhere;}
+.small-label {font-size:14px;color:#4D6370;margin-bottom:12px;}
+.status-label {display:inline-block;font-size:14px;padding:6px 10px;border-radius:4px;font-weight:600;margin-bottom:12px;}
+.status-suspect {color:#8A530C;background:#FFF6E8;border:1px solid #8A530C;}
+.status-correct {color:#126B49;background:#EFF8F2;border:1px solid #126B49;}
+.path {display:flex;flex-wrap:wrap;gap:12px 20px;color:#4D6370;font-size:14px;margin:0 0 24px;}
+.path span {padding-bottom:6px;border-bottom:1px solid #C7D3D9;}
+.path b {color:#126B66;font-variant-numeric:tabular-nums;}
+.section-kicker {color:#126B66;font-size:14px;font-weight:600;margin:16px 0 4px;}
+.sidebar-footer,.quiet-note {font-size:14px;line-height:1.6;color:#4D6370;margin-top:24px;}
+.lab-footer {font-size:14px;line-height:1.6;color:#4D6370;border-top:1px solid #C7D3D9;margin-top:40px;padding-top:20px;}
+.st-key-dcs_verdict {border-left:4px solid #126B66;padding-left:20px;}
+.dcs-skip {position:fixed;top:-100px;left:16px;z-index:999999;background:white;color:#182A35;border:3px solid #6945A0;padding:12px 16px;}
+.dcs-skip:focus {top:12px;}
+#dcs-main {scroll-margin-top:80px;}
+@media (max-width:700px) {.brief-card {padding:20px;}.brief-card dl {grid-template-columns:1fr;gap:20px;}.hero-subtitle {font-size:18px;}.path {gap:12px;}}
+@media (prefers-reduced-motion:reduce) {
+  :is(.st-key-dcs_root,.st-key-dcs_navigation,.st-key-dcs_guided_controls,.st-key-dcs_detective_controls,.st-key-dcs_lab_controls) * {animation:none !important;transition:none !important;scroll-behavior:auto !important;}
+}

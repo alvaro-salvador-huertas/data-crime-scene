@@ -1,0 +1,5 @@
+# Opcional: revisión visual automatizada con Chrome del sistema.
+-r requirements.txt
+playwright==1.64.1
+greenlet==3.5.6
+pyee==14.0.0
