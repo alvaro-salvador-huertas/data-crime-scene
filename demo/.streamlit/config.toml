@@ -1,0 +1,4 @@
+# Script-level override for Community Cloud. The root theme is inherited.
+# When testing locally, override with --server.address 127.0.0.1.
+[server]
+address = "0.0.0.0"

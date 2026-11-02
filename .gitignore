@@ -20,5 +20,6 @@ dist/
 .env.*
 !.env.example
 .streamlit/secrets.toml
+**/.streamlit/secrets.toml
 artifacts/
 !artifacts/.gitkeep

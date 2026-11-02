@@ -1,6 +1,6 @@
 # Metodología de Data Crime Scene
 
-Este laboratorio usa datos **sintéticos** generados localmente. Los modelos se entrenan y predicen de verdad; los resultados no están escritos de antemano. En el recorrido guiado, cada expediente compara un procedimiento deliberadamente incorrecto con otro que corrige el mecanismo estudiado. El modo Laboratorio añade controles y variabilidad entre semillas. No es una estimación del rendimiento de un producto real.
+Este laboratorio usa datos **sintéticos** generados por el motor: en el equipo que ejecuta la aplicación local o en el servidor de la demo alojada. Los modelos se entrenan y predicen de verdad; los resultados no están escritos de antemano. En el recorrido guiado, cada expediente compara un procedimiento deliberadamente incorrecto con otro que corrige el mecanismo estudiado. El modo Laboratorio añade controles y variabilidad entre semillas. No es una estimación del rendimiento de un producto real.
 
 ## Antes de mirar las puntuaciones
 

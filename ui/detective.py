@@ -240,11 +240,11 @@ def _summary(session) -> None:
             "template_id": "Identificador", "title": "Expediente", "completed": "Respuesta registrada",
             "phase": "Fase de evidencia", "hints_used": "Pistas", "solution_consulted": "Solución consultada",
         }), hide_index=True, width="stretch")
-        caption("Progreso local de esta sesión. Estos recuentos ayudan a repasar; no son una certificación de conocimientos ni una evaluación profesional.")
+        caption("Progreso de esta sesión. Estos recuentos ayudan a repasar; no son una certificación de conocimientos ni una evaluación profesional.")
         st.download_button("↓ Descargar resumen de sesión · JSON", _json(summary), file_name="detective-sesion.json", mime="application/json", on_click="ignore", key="detective_download_session")
 
 
-def render_detective() -> None:
+def render_detective(*, public_demo: bool = False) -> None:
     fingerprint = detective_fingerprint()
     if "detective_session" not in st.session_state:
         st.session_state["detective_session"] = new_session(42)
@@ -323,4 +323,5 @@ def render_detective() -> None:
         st.info("Pulsa «Abrir expediente» para calcular su informe e inspeccionar las pruebas. La solución permanece oculta hasta que decidas revelarla.")
     st.divider()
     _summary(session)
-    st.markdown('<div class="lab-footer">Investigación local con datos sintéticos. Las descargas evitan spoilers involuntarios; el código local puede inspeccionarse. Las conclusiones se limitan a los mecanismos investigados.</div>', unsafe_allow_html=True)
+    environment = "Investigación en el servidor" if public_demo else "Investigación local"
+    st.markdown(f'<div class="lab-footer">{environment} con datos sintéticos. Las descargas evitan spoilers involuntarios; el código público puede inspeccionarse. Las conclusiones se limitan a los mecanismos investigados.</div>', unsafe_allow_html=True)

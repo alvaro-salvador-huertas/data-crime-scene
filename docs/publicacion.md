@@ -6,7 +6,7 @@ Revisión del 30 de octubre de 2026: [corrección y evidencia nueva](correccion-
 
 **Licencia autorizada:** [MIT](../LICENSE), Copyright (c) 2026 Álvaro Salvador Huertas, con el texto de la [Open Source Initiative](https://opensource.org/license/mit). Los [avisos de terceros](../THIRD_PARTY_NOTICES.md) explican la procedencia revisada y las licencias que conserva cada componente. No se modifican las dependencias ni sus avisos.
 
-Los 90 archivos anteriores coinciden byte a byte con el manifiesto del cierre de la corrección, incluidos fuentes, pruebas, dependencias y workflow. Se conservan las 122 evidencias locales y las identidades de los 21 históricos. Se reutiliza la validación de **226 pruebas en 33,36 s**, AppTest, `pip check` y arranque; no se repite la suite local por añadir licencia y documentación. La revisión del índice detectó además líneas vacías sobrantes al final de `ui/plotly_theme.py`: se eliminaron y se comprobó que su AST permanece idéntico. No cambia el comportamiento, las pruebas, las dependencias ni la huella del motor. El conjunto final revisado contiene **92 archivos**, enumerados en la lista explícita. Las evidencias nuevas se guardan en `artifacts/publication-20261031/`, excluido de Git.
+Los 90 archivos anteriores coinciden byte a byte con el manifiesto del cierre de la corrección, incluidos fuentes, pruebas, dependencias y workflow. Se conservan las 122 evidencias locales y las identidades de los 21 históricos. Se reutiliza la validación de **226 pruebas en 33,36 s**, AppTest, `pip check` y arranque; no se repite la suite local por añadir licencia y documentación. La revisión del índice detectó además líneas vacías sobrantes al final de `ui/plotly_theme.py`: se eliminaron y se comprobó que su AST permanece idéntico. No cambia el comportamiento, las pruebas, las dependencias ni la huella del motor. La primera publicación revisada contenía **92 archivos**. La lista explícita refleja ahora los archivos propuestos para el estado de trabajo, incluida la [preparación de demo pública](demo-publica.md) propuesta en `feat/demo-publica` para revisión contra `main`. Publicar la rama y abrir una PR no implica integrarla ni desplegarla. Las evidencias nuevas se guardan en `artifacts/publication-20261031/`, excluido de Git.
 
 ## Qué revisar y compartir
 
@@ -50,6 +50,7 @@ dist/
 .env.*
 !.env.example
 .streamlit/secrets.toml
+**/.streamlit/secrets.toml
 artifacts/
 !artifacts/.gitkeep
 ```

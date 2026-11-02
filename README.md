@@ -28,7 +28,17 @@ python3 -m venv .venv
 
 Abre **http://127.0.0.1:8501** y selecciona **Modo Detective**. Elige un expediente y pulsa **Abrir expediente**. La semilla reproduce el orden y los datos; cambiarla inicia otra sesión. No hay cuentas ni progreso persistente. Detén el servidor con `Ctrl+C`.
 
-La instalación descarga paquetes. Después, la aplicación funciona sin conexión, sin APIs, credenciales ni recursos cloud; la telemetría de Streamlit está desactivada. Versiones fijadas y comprobadas: Python 3.12.3, NumPy 2.5.4, pandas 3.1.0, scikit-learn 1.9.1, Streamlit 1.66.1 y Plotly 7.1.0.
+La instalación descarga paquetes. En el uso local, después la aplicación funciona sin conexión, sin APIs, credenciales ni recursos cloud; la telemetría de Streamlit está desactivada. Versiones fijadas y comprobadas: Python 3.12.3, NumPy 2.5.4, pandas 3.1.0, scikit-learn 1.9.1, Streamlit 1.66.1 y Plotly 7.1.0.
+
+## Demo pública preparada
+
+La entrada pública reutiliza Guiado, Laboratorio y Detective sin pedir rutas del servidor al visitante. Para probarla localmente:
+
+```bash
+.venv/bin/python -m streamlit run demo/streamlit_app.py --server.address 127.0.0.1 --server.port 8502
+```
+
+Abrir **http://127.0.0.1:8502**. Esta primera preparación no incluye el estudio agregado; las configuraciones puntuales entrenan y evalúan de verdad. El progreso permanece separado por sesión y no es persistente. En alojamiento, los cálculos ocurren en el servidor y se aplican las condiciones de telemetría del proveedor. Véase [preparación, pruebas y pasos futuros](docs/demo-publica.md). **Preparación comprobada localmente:** 241 pruebas correctas y navegador a 390/1440 px con dos sesiones independientes. **No se ha desplegado la demo en cloud.**
 
 ## Comprobar y experimentar
 

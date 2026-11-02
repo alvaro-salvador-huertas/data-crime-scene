@@ -50,7 +50,7 @@ Si ya consultaste la solución inicial, el expediente sigue marcado como consult
 - **Investigación:** añade tus respuestas, notas, solicitudes, uso de pistas e intervenciones reales. Incluye la solución de la fase actual únicamente cuando la has revelado explícitamente.
 - **Resumen de sesión:** expedientes completados, decisiones acertadas, pistas, soluciones consultadas y conceptos que conviene repasar. Cada expediente aparece una sola vez; no hay rankings ni certificados.
 
-La separación evita spoilers accidentales al descargar un archivo. No es protección antitrampas: la aplicación funciona localmente y su código puede inspeccionarse. Las descargas pueden contener tus notas; los archivos locales de `artifacts/` se excluyen de Git.
+La separación evita spoilers accidentales al descargar un archivo. No es protección antitrampas: el código público puede inspeccionarse tanto en el uso local como en la demo alojada. Las descargas pueden contener tus notas; los archivos locales de `artifacts/` se excluyen de Git.
 
 ## Dónde leer el código
 
