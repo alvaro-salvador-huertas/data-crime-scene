@@ -61,9 +61,11 @@ fusión automática.
 
 - **pytest y pip check:** funcionamiento y consistencia del entorno.
 - **pip-audit 2.10.1:** las versiones fijadas de aplicación y navegador,
-  incluidas mediante `requirements-browser.txt`, sin instalar esos paquetes en
+  pasando explícitamente ambos archivos de requisitos, sin instalar esos paquetes en
   el job de seguridad. Un paquete no auditable o una vulnerabilidad conocida
-  impiden que el job termine correctamente. No se ignoran avisos de CVE.
+  impiden que el job termine correctamente. El JSON resultante se coteja contra
+  todas las versiones fijadas: faltantes, extras, duplicados u omisiones hacen
+  fallar el job. No se ignoran avisos de CVE.
 - **Bandit 1.9.4:** código de `app.py`, `demo/`, `ui/` y
   `data_crime_scene/`, con todas sus reglas. Una única advertencia B311 revisada
   corresponde a `random.Random(seed).shuffle(order)`, usado para ordenar casos
@@ -88,7 +90,7 @@ Para reproducir los controles de Python en un entorno auxiliar:
 ```bash
 python3 -m venv .venv-security
 .venv-security/bin/python -m pip install pip-audit==2.10.1 bandit==1.9.4
-.venv-security/bin/python -m pip_audit --no-deps --disable-pip --strict -r requirements-browser.txt
+.venv-security/bin/python -m pip_audit --no-deps --disable-pip --strict -r requirements.txt -r requirements-browser.txt
 .venv-security/bin/python scripts/check_static_security.py
 .venv/bin/python -m pytest -q
 ```
@@ -137,6 +139,11 @@ siguen siendo pasos posteriores a su revisión.
   ni eliminan aserciones funcionales.
 - `pip check` correcto. pip-audit consultó las 48 versiones fijadas: ninguna
   vulnerabilidad conocida encontrada en esa ejecución. No se cambiaron pins.
+  El cotejo detectó que la primera invocación solo había auditado los tres
+  paquetes de navegador: no había expandido el archivo incluido. Se corrigió
+  pasando ambos archivos explícitamente y se confirmó igualdad exacta entre
+  las 48 versiones esperadas y las auditadas, sin omisiones. CI ahora exige
+  esa comprobación de cobertura; los primeros resultados se conservan aparte.
 - Bandit: ninguna advertencia sin revisar; una B311 justificada como se describe
   arriba. Gitleaks: sin hallazgos en el historial disponible ni en una copia de
   los archivos publicables. Un token sintético no funcional produjo rechazo y
