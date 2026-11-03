@@ -30,6 +30,7 @@ from ui.plotly_theme import INK, MUTED, TEAL, VIOLET, apply_template
 
 
 PROJECT = Path(__file__).resolve().parents[1]
+PUBLIC_STUDY = PROJECT / "demo" / "study.json"
 METRICS = {"balanced_accuracy": "Balanced accuracy", "accuracy": "Accuracy", "f1": "F1"}
 COLORS = {"incorrect": "#8A530C", "correct": TEAL, "control": VIOLET, "baseline": MUTED}
 VARIANTS = {
@@ -188,7 +189,7 @@ def differences_summary(rows: list[dict]) -> pd.DataFrame:
 def render_single_result(result: dict, case_id: str) -> None:
     st.header("Resultado de la configuración")
     config = result["config"]
-    caption(f"Ejecución puntual solicitada en esta sesión · semilla {config['seed']} · nivel {config['level']}. Una configuración idéntica puede reutilizarse desde la caché local.")
+    caption(f"Ejecución puntual solicitada en esta sesión · semilla {config['seed']} · nivel {config['level']}. Una configuración idéntica puede reutilizarse desde la caché en memoria del proceso.")
     st.dataframe(table_metrics(result, case_id), hide_index=True, width="stretch")
     caption("Las métricas proceden de las predicciones de esta ejecución. Corregido significa que se elimina el mecanismo estudiado; no certifica la ausencia de cualquier otro problema.")
     if case_id == "future":
@@ -235,7 +236,7 @@ def render_study(study: dict, source_path: str, case_id: str, metric: str) -> No
     errors = [entry for entry in entries if entry["status"] != "ok"]
     st.markdown("### Estudio cargado · resultados calculados anteriormente")
     caption("Los controles laterales configuran la ejecución puntual. Este estudio conserva sus tres niveles y diez semillas fijados previamente para cada caso.")
-    caption(f"Archivo local: {source_path}")
+    caption(f"Procedencia: {source_path}")
     st.write(f"**Generado:** {study['created_at']} · **Combinaciones previstas:** {len(entries)} · **Válidas:** {len(valid)} · **Errores:** {len(errors)}.")
     caption(f"Motor {study['engine_fingerprint']} · protocolo {study['protocol_hash']}")
     with st.expander("Procedencia, semillas y versiones del estudio"):
@@ -289,7 +290,46 @@ def render_study(study: dict, source_path: str, case_id: str, metric: str) -> No
     st.download_button("↓ Descargar estudio cargado completo · JSON", json_payload(study), file_name="laboratorio-estudio.json", mime="application/json", key="lab_download_study", on_click="ignore", help="Descarga el mismo estudio del que proceden los puntos y tablas, incluidos todos sus casos y errores.")
 
 
-def render_laboratory() -> None:
+def _study_controls(public_demo: bool) -> None:
+    if st.session_state.get("lab_study_public_demo") != public_demo:
+        st.session_state["lab_study_public_demo"] = public_demo
+        st.session_state.pop("lab_study", None)
+        st.session_state.pop("lab_study_source", None)
+    if public_demo:
+        if not PUBLIC_STUDY.is_file():
+            st.session_state.pop("lab_study", None)
+            st.info("Esta demo no incluye un estudio agregado. Puedes ejecutar configuraciones puntuales reales con los controles laterales.")
+        elif st.button("Cargar estudio de la demo", key="lab_load_public_study"):
+            st.session_state.pop("lab_study", None)
+            try:
+                st.session_state["lab_study"] = load_study(PUBLIC_STUDY)
+                st.session_state["lab_study_source"] = "Estudio incluido en la demo"
+            except (ValueError, OSError):
+                st.warning("El estudio de la demo no está disponible o no es compatible con este entorno. La ejecución puntual sigue disponible.")
+        return
+    st.write("Carga resultados ya calculados para observar su variabilidad. El estudio completo se ejecuta con un comando separado y conserva también los errores.")
+    with st.expander("Comandos de comprobación de coste y ejecución del estudio"):
+        st.code(".venv/bin/python -m data_crime_scene.study --preflight\n.venv/bin/python -m data_crime_scene.study --output artifacts/laboratory-study.json", language="bash")
+    study_path = st.text_input("Archivo local del estudio", value="artifacts/laboratory-study.json", key="lab_study_path")
+    if st.session_state.get("lab_study_requested_path") != study_path:
+        st.session_state["lab_study_requested_path"] = study_path
+        st.session_state.pop("lab_study", None)
+        st.session_state.pop("lab_study_source", None)
+    if st.button("Cargar estudio local", key="lab_load_study"):
+        st.session_state.pop("lab_study", None)
+        try:
+            resolved = (PROJECT / study_path).resolve()
+            if not resolved.is_relative_to(PROJECT):
+                raise ValueError("El archivo debe estar dentro del proyecto.")
+            with st.spinner("Cargando y verificando protocolo, versiones, predicciones y configuración…"):
+                study = load_study(resolved)
+                st.session_state["lab_study"] = study
+                st.session_state["lab_study_source"] = str(resolved)
+        except (ValueError, OSError) as error:
+            st.error(f"No se ha cargado el estudio: {error}")
+
+
+def render_laboratory(*, public_demo: bool = False) -> None:
     fingerprint = engine_fingerprint()
     with st.sidebar, st.container(key="dcs_lab_controls"):
         st.markdown('<div class="brand-label">DCS / Laboratorio experimental</div>', unsafe_allow_html=True)
@@ -341,26 +381,7 @@ def render_laboratory() -> None:
     st.warning(spec["caveat"])
     st.divider()
     st.header("Estudio predefinido · tres niveles y diez semillas")
-    st.write("Carga resultados ya calculados para observar su variabilidad. El estudio completo se ejecuta con un comando separado y conserva también los errores.")
-    with st.expander("Comandos de comprobación de coste y ejecución del estudio"):
-        st.code(".venv/bin/python -m data_crime_scene.study --preflight\n.venv/bin/python -m data_crime_scene.study --output artifacts/laboratory-study.json", language="bash")
-    study_path = st.text_input("Archivo local del estudio", value="artifacts/laboratory-study.json", key="lab_study_path")
-    if st.session_state.get("lab_study_requested_path") != study_path:
-        st.session_state["lab_study_requested_path"] = study_path
-        st.session_state.pop("lab_study", None)
-        st.session_state.pop("lab_study_source", None)
-    if st.button("Cargar estudio local", key="lab_load_study"):
-        st.session_state.pop("lab_study", None)
-        try:
-            resolved = (PROJECT / study_path).resolve()
-            if not resolved.is_relative_to(PROJECT):
-                raise ValueError("El archivo debe estar dentro del proyecto.")
-            with st.spinner("Cargando y verificando protocolo, versiones, predicciones y configuración…"):
-                study = load_study(resolved)
-                st.session_state["lab_study"] = study
-                st.session_state["lab_study_source"] = str(resolved)
-        except (ValueError, OSError) as error:
-            st.error(f"No se ha cargado el estudio: {error}")
+    _study_controls(public_demo)
     metric = st.selectbox("Métrica del resumen del estudio", list(METRICS), format_func=METRICS.get, key="lab_study_metric")
     study = st.session_state.get("lab_study")
     if study is not None:
@@ -368,7 +389,10 @@ def render_laboratory() -> None:
             render_study(study, st.session_state["lab_study_source"], case_id, metric)
         except ValueError as error:
             st.session_state.pop("lab_study", None)
-            st.error(f"Estudio incompatible o alterado; vuelve a cargarlo: {error}")
+            if public_demo:
+                st.warning("El estudio de la demo no es compatible con este entorno. La ejecución puntual sigue disponible.")
+            else:
+                st.error(f"Estudio incompatible o alterado; vuelve a cargarlo: {error}")
     else:
         caption("No hay un estudio cargado. La ejecución puntual y el estudio guardado mantienen procedencias y resultados separados.")
     st.markdown('<div class="lab-footer">Datos sintéticos y modelos pequeños en CPU. Ninguna puntuación certifica un experimento completo ni acredita rendimiento en producción.</div>', unsafe_allow_html=True)

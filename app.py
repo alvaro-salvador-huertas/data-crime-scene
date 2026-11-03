@@ -7,6 +7,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from data_crime_scene.cases import CASES
+from data_crime_scene.laboratory import engine_fingerprint
 from data_crime_scene.experiments import run_experiment
 from data_crime_scene.validation import validate_result
 from ui.presentation import brief_card, caption, load_styles, skip_link
@@ -23,8 +24,10 @@ LABELS = {"incorrect": "⚠ Procedimiento contaminado", "correct": "✓ Procedim
 
 
 @st.cache_data(show_spinner=False, max_entries=24)
-def cached_experiment(case_id: str, seed: int):
-    """Todos los parámetros públicos del motor forman parte de la clave."""
+def cached_experiment(case_id: str, seed: int, fingerprint: str):
+    """Datos sintéticos compartidos por copia; clave con contexto y motor."""
+    if fingerprint != engine_fingerprint():
+        raise ValueError("La versión del motor cambió. Vuelve a ejecutar el experimento.")
     return run_experiment(case_id, seed)
 
 
@@ -167,38 +170,43 @@ def render_comparison(case, result) -> None:
     )
 
 
-def main() -> None:
+def main(*, public_demo: bool = False) -> None:
     st.set_page_config(page_title="Data Crime Scene · laboratorio", page_icon="🔎", layout="wide", initial_sidebar_state="auto")
     load_styles()
     skip_link()
     with st.container(key="dcs_root"):
-        _render_main()
+        if public_demo:
+            caption("Demo pública · datos sintéticos · cálculo en el servidor. Sin cuentas; el progreso de esta sesión no es persistente.")
+        _render_main(public_demo=public_demo)
 
 
-def _render_main() -> None:
+def _render_main(*, public_demo: bool = False) -> None:
     with st.sidebar, st.container(key="dcs_navigation"):
         mode = st.radio("Modo", ["Recorrido guiado", "Laboratorio", "Modo Detective"], key="mode_selector")
     if mode == "Modo Detective":
         from ui.detective import render_detective
 
-        render_detective()
+        render_detective(public_demo=public_demo)
         return
     if mode == "Laboratorio":
         from ui.laboratory import render_laboratory
 
-        render_laboratory()
+        render_laboratory(public_demo=public_demo)
         return
     case_ids = list(CASES)
     with st.sidebar, st.container(key="dcs_guided_controls"):
-        st.markdown('<div class="brand-label">DCS / Laboratorio local</div>', unsafe_allow_html=True)
+        label = "Demo pública" if public_demo else "Laboratorio local"
+        st.markdown(f'<div class="brand-label">DCS / {label}</div>', unsafe_allow_html=True)
         st.markdown("### Mesa de investigación")
         caption("Tres expedientes. Tres formas de contaminar una evaluación.")
         case_id = st.selectbox("Expediente", case_ids, format_func=lambda value: f"{case_ids.index(value) + 1:02d} · {CASES[value].title}", key="case_selector")
         seed = int(st.number_input("Semilla del experimento", min_value=0, max_value=2**32 - 1, value=42, step=1, key="seed_input", help="La misma semilla y el mismo caso reproducen los datos, la partición y los resultados."))
         caption("Semillas de comprobación: 7 · 42 · 2026. Puedes explorar otras sin buscar una caída concreta.")
         run = st.button("Ejecutar experimento", type="primary", width="stretch", key="run_experiment")
-        st.markdown('<div class="sidebar-footer">DATOS SINTÉTICOS · CPU LOCAL<br>Sin cuentas ni servicios externos.<br>Las interacciones reutilizan el resultado; el entrenamiento comienza al ejecutar.</div>', unsafe_allow_html=True)
-    context = (case_id, seed)
+        environment = "CPU DEL SERVIDOR<br>Alojamiento externo; sin cuentas de la aplicación." if public_demo else "CPU LOCAL<br>Sin cuentas ni servicios externos."
+        st.markdown(f'<div class="sidebar-footer">DATOS SINTÉTICOS · {environment}<br>Las interacciones reutilizan el resultado; el entrenamiento comienza al ejecutar.</div>', unsafe_allow_html=True)
+    fingerprint = engine_fingerprint()
+    context = (case_id, seed, fingerprint)
     if st.session_state.get("active_context") != context:
         st.session_state["parameters_changed"] = "active_context" in st.session_state
         st.session_state["active_context"] = context
@@ -221,7 +229,7 @@ def _render_main() -> None:
         st.session_state["revealed"] = False
         try:
             with st.spinner("Generando datos, entrenando y evaluando los dos procedimientos…"):
-                candidate = cached_experiment(case_id, seed)
+                candidate = cached_experiment(case_id, seed, fingerprint)
                 validate_result(candidate, expected_case_id=case_id, expected_seed=seed)
                 st.session_state["result"] = candidate
                 st.session_state["revealed"] = False
@@ -229,7 +237,7 @@ def _render_main() -> None:
         except (ValueError, RuntimeError) as error:
             clear = getattr(cached_experiment, "clear", None)
             if callable(clear):
-                clear(case_id, seed)
+                clear(case_id, seed, fingerprint)
             st.error(f"No se ha podido ejecutar el experimento: {error}. Revisa la semilla y vuelve a intentarlo.")
     result = st.session_state.get("result")
     if result is not None:
@@ -238,7 +246,7 @@ def _render_main() -> None:
         except ValueError as error:
             clear = getattr(cached_experiment, "clear", None)
             if callable(clear):
-                clear(case_id, seed)
+                clear(case_id, seed, fingerprint)
             st.session_state.pop("result", None)
             st.session_state["revealed"] = False
             result = None

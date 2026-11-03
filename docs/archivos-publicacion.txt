@@ -15,10 +15,13 @@ data_crime_scene/laboratory.py
 data_crime_scene/results.py
 data_crime_scene/study.py
 data_crime_scene/validation.py
+demo/.streamlit/config.toml
+demo/streamlit_app.py
 docs/archivos-publicacion.txt
 docs/correccion-baseline-cohorte.md
 docs/defensa-tecnica.md
 docs/demo-dos-minutos.md
+docs/demo-publica.md
 docs/guia-de-regreso.md
 docs/integracion-visual.md
 docs/metodologia.md
@@ -73,6 +76,7 @@ requirements.txt
 scripts/check_browser.py
 scripts/check_detective_browser.py
 scripts/check_lab_browser.py
+scripts/check_public_demo.py
 scripts/check_visual_integration.py
 tests/test_adversarial.py
 tests/test_app.py
@@ -84,6 +88,7 @@ tests/test_detective_app.py
 tests/test_engine.py
 tests/test_lab_app.py
 tests/test_laboratory.py
+tests/test_public_demo.py
 tests/test_visual_charts.py
 ui/detective.py
 ui/laboratory.py
