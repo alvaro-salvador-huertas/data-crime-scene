@@ -1,3 +1,5 @@
+.github/dependabot.yml
+.github/main-protection.json
 .github/workflows/ci.yml
 .gitignore
 .streamlit/config.toml
@@ -69,6 +71,7 @@ docs/screenshots/visual-integration-20261029/07-detective-keyboard-focus-390.png
 docs/screenshots/visual-integration-20261029/08-detective-intervention-390.png
 docs/screenshots/visual-integration-20261029/09-reduced-motion-1440.png
 docs/screenshots/visual-integration-20261029/10-skip-link-focus-1440.png
+docs/seguridad-demo.md
 docs/verificaciones-v03.md
 pyproject.toml
 requirements-browser.txt
@@ -77,6 +80,7 @@ scripts/check_browser.py
 scripts/check_detective_browser.py
 scripts/check_lab_browser.py
 scripts/check_public_demo.py
+scripts/check_static_security.py
 scripts/check_visual_integration.py
 tests/test_adversarial.py
 tests/test_app.py
@@ -89,9 +93,12 @@ tests/test_engine.py
 tests/test_lab_app.py
 tests/test_laboratory.py
 tests/test_public_demo.py
+tests/test_public_limits.py
+tests/test_static_security.py
 tests/test_visual_charts.py
 ui/detective.py
 ui/laboratory.py
 ui/plotly_theme.py
 ui/presentation.py
+ui/public_limits.py
 ui/style.css

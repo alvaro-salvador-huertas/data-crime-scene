@@ -17,6 +17,17 @@ ROOT = Path(__file__).resolve().parents[1]
 DEMO = ROOT / "demo/streamlit_app.py"
 
 
+@pytest.fixture(autouse=True)
+def public_budget_with_elapsed_time(monkeypatch):
+    # These tests verify workflows, not real-time throttling. Advance a real
+    # budget's clock between actions; dedicated security tests hold time fixed.
+    from itertools import count
+    from ui import public_limits
+    ticks = count(start=60, step=60)
+    budget = public_limits.PublicBudget(clock=lambda: next(ticks))
+    monkeypatch.setattr(public_limits, "get_public_budget", lambda: budget)
+
+
 def open_demo(mode="Recorrido guiado", template=None):
     app = AppTest.from_file(str(DEMO), default_timeout=30).run()
     app.radio(key="mode_selector").set_value(mode).run()

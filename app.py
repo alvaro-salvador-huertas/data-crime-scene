@@ -11,6 +11,7 @@ from data_crime_scene.laboratory import engine_fingerprint
 from data_crime_scene.experiments import run_experiment
 from data_crime_scene.validation import validate_result
 from ui.presentation import brief_card, caption, load_styles, skip_link
+from ui.public_limits import PublicLimitError, public_action
 from ui.plotly_theme import apply_template, INK, TEAL
 
 
@@ -177,6 +178,7 @@ def main(*, public_demo: bool = False) -> None:
     with st.container(key="dcs_root"):
         if public_demo:
             caption("Demo pública · datos sintéticos · cálculo en el servidor. Sin cuentas; el progreso de esta sesión no es persistente.")
+            caption("Uso compartido: un cálculo simultáneo, hasta 12 solicitudes por minuto entre todas las sesiones y 3 segundos entre tus solicitudes.")
         _render_main(public_demo=public_demo)
 
 
@@ -225,15 +227,17 @@ def _render_main(*, public_demo: bool = False) -> None:
     st.write(case.story)
     brief_card(case.objective, case.prediction_time)
     if run:
-        st.session_state.pop("result", None)
-        st.session_state["revealed"] = False
         try:
-            with st.spinner("Generando datos, entrenando y evaluando los dos procedimientos…"):
+            with public_action(public_demo), st.spinner("Generando datos, entrenando y evaluando los dos procedimientos…"):
+                st.session_state.pop("result", None)
+                st.session_state["revealed"] = False
                 candidate = cached_experiment(case_id, seed, fingerprint)
                 validate_result(candidate, expected_case_id=case_id, expected_seed=seed)
                 st.session_state["result"] = candidate
                 st.session_state["revealed"] = False
                 st.session_state["parameters_changed"] = False
+        except PublicLimitError as error:
+            st.warning(str(error))
         except (ValueError, RuntimeError) as error:
             clear = getattr(cached_experiment, "clear", None)
             if callable(clear):

@@ -34,6 +34,7 @@ def assert_public(value):
 class Visit:
     def __init__(self, page, output, report, width):
         self.page, self.output, self.report, self.width = page, output, report, width
+        self.next_calculation_at = 0.0
         page.set_default_timeout(30000)
         page.on("pageerror", lambda e: report["page_errors"].append(str(e)))
         page.on("console", lambda m: report["console_errors"].append(m.text) if m.type == "error" else None)
@@ -65,6 +66,10 @@ class Visit:
         self.settle()
 
     def click(self, label):
+        if label in {"Ejecutar experimento", "Ejecutar configuración", "Abrir expediente", "Ejecutar la acción elegida"}:
+            # Respect the real public session interval; do not disable it in QA.
+            time.sleep(max(0, self.next_calculation_at - time.monotonic()))
+            self.next_calculation_at = time.monotonic() + 3.2
         started = time.perf_counter()
         self.page.get_by_role("button", name=label, exact=True).click()
         self.settle()

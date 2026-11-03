@@ -38,9 +38,15 @@ La entrada pública reutiliza Guiado, Laboratorio y Detective sin pedir rutas de
 .venv/bin/python -m streamlit run demo/streamlit_app.py --server.address 127.0.0.1 --server.port 8502
 ```
 
-Abrir **http://127.0.0.1:8502**. Esta primera preparación no incluye el estudio agregado; las configuraciones puntuales entrenan y evalúan de verdad. El progreso permanece separado por sesión y no es persistente. En alojamiento, los cálculos ocurren en el servidor y se aplican las condiciones de telemetría del proveedor. Véase [preparación, pruebas y pasos futuros](docs/demo-publica.md). **Preparación comprobada localmente:** 241 pruebas correctas y navegador a 390/1440 px con dos sesiones independientes. **No se ha desplegado la demo en cloud.**
+Abrir **http://127.0.0.1:8502**. Esta primera preparación no incluye el estudio agregado; las configuraciones puntuales entrenan y evalúan de verdad. El progreso permanece separado por sesión y no es persistente. En alojamiento, los cálculos ocurren en el servidor y se aplican las condiciones de telemetría del proveedor. Véase [preparación, pruebas y pasos futuros](docs/demo-publica.md). **Validación de la preparación anterior:** 241 pruebas correctas y navegador a 390/1440 px con dos sesiones independientes. Esas comprobaciones locales no acreditan las prestaciones en cloud.
 
 ## Comprobar y experimentar
+
+La entrada pública incorpora [límites de uso y comprobaciones de seguridad](docs/seguridad-demo.md):
+un cálculo simultáneo por proceso, presupuesto compartido de 12 solicitudes por
+minuto, intervalo de 3 segundos por sesión y notas de hasta 2.000 caracteres.
+La ejecución local conserva su flujo. Estos controles no sustituyen la protección
+de red del proveedor ni convierten el contenido público en privado.
 
 Desde la raíz del proyecto, en otra terminal:
 

@@ -12,6 +12,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from ui.presentation import caption
+from ui.public_limits import PublicLimitError, public_action
 
 from data_crime_scene.cases import CASES
 from data_crime_scene.laboratory import (
@@ -300,10 +301,13 @@ def _study_controls(public_demo: bool) -> None:
             st.session_state.pop("lab_study", None)
             st.info("Esta demo no incluye un estudio agregado. Puedes ejecutar configuraciones puntuales reales con los controles laterales.")
         elif st.button("Cargar estudio de la demo", key="lab_load_public_study"):
-            st.session_state.pop("lab_study", None)
             try:
-                st.session_state["lab_study"] = load_study(PUBLIC_STUDY)
-                st.session_state["lab_study_source"] = "Estudio incluido en la demo"
+                with public_action(public_demo):
+                    st.session_state.pop("lab_study", None)
+                    st.session_state["lab_study"] = load_study(PUBLIC_STUDY)
+                    st.session_state["lab_study_source"] = "Estudio incluido en la demo"
+            except PublicLimitError as error:
+                st.warning(str(error))
             except (ValueError, OSError):
                 st.warning("El estudio de la demo no está disponible o no es compatible con este entorno. La ejecución puntual sigue disponible.")
         return
@@ -354,12 +358,14 @@ def render_laboratory(*, public_demo: bool = False) -> None:
         st.session_state["lab_context"] = context
         st.session_state.pop("lab_result", None)
     if run:
-        st.session_state.pop("lab_result", None)
         try:
-            with st.spinner("Generando los controles, entrenando y evaluando esta configuración…"):
+            with public_action(public_demo), st.spinner("Generando los controles, entrenando y evaluando esta configuración…"):
+                st.session_state.pop("lab_result", None)
                 candidate = cached_lab_experiment(case_id, seed, level, fingerprint)
                 validate_lab_result(candidate, case_id=case_id, seed=seed, level=level)
                 st.session_state["lab_result"] = candidate
+        except PublicLimitError as error:
+            st.warning(str(error))
         except (ValueError, RuntimeError) as error:
             clear = getattr(cached_lab_experiment, "clear", None)
             if callable(clear):

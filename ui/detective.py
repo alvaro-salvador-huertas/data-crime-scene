@@ -7,6 +7,7 @@ import pandas as pd
 import streamlit as st
 
 from ui.presentation import brief_card, caption
+from ui.public_limits import MAX_NOTES_CHARS, PublicLimitError, public_action, validate_public_notes
 
 from data_crime_scene.detective import (
     TEMPLATES,
@@ -124,7 +125,7 @@ def _hints(session, case, record: dict, view: dict) -> None:
         st.info(f"Pista {index}: {hint}")
 
 
-def _answer(session, case, record: dict, view: dict) -> str | None:
+def _answer(session, case, record: dict, view: dict, *, public_demo=False) -> str | None:
     st.header("02 · Tu investigación")
     phase = view["phase"]
     submitted = record["answers"].get(phase)
@@ -154,11 +155,19 @@ def _answer(session, case, record: dict, view: dict) -> str | None:
         index=action_options.index(default_action) if default_action in action_options else None,
         disabled=submitted is not None, key=f"{prefix}_action",
     )
-    notes = st.text_area("Notas de investigación · no se califican", value=defaults.get("notes", ""), disabled=submitted is not None, key=f"{prefix}_notes", help="Este texto se conserva en el resumen. No se puntúa mediante palabras clave ni mediante un modelo de lenguaje.")
-    if submitted is None:
+    notes = st.text_area("Notas de investigación · no se califican", value=defaults.get("notes", ""), disabled=submitted is not None, key=f"{prefix}_notes", max_chars=MAX_NOTES_CHARS if public_demo else None, help="Este texto se conserva en el resumen. No se puntúa mediante palabras clave ni mediante un modelo de lenguaje.")
+    notes_valid = True
+    try:
+        validate_public_notes(notes, public_demo)
+    except PublicLimitError as error:
+        notes_valid = False
+        st.error(str(error))
+    if submitted is None and notes_valid:
         st.session_state["detective_drafts"][draft_key] = {"diagnosis": diagnosis, "evidence_ids": evidence, "action": action, "notes": notes}
     if st.button("Confirmar respuesta", type="primary", key="detective_confirm", disabled=submitted is not None):
-        if diagnosis is None or action is None:
+        if not notes_valid:
+            pass  # The server guard above rejects manipulated widget values too.
+        elif diagnosis is None or action is None:
             st.error("Elige un diagnóstico y una acción antes de confirmar.")
         else:
             confirm_answer(session, case, diagnosis, evidence, action, notes=notes)
@@ -180,7 +189,7 @@ def _answer(session, case, record: dict, view: dict) -> str | None:
     return action
 
 
-def _solution(session, case, record: dict, action: str | None) -> None:
+def _solution(session, case, record: dict, action: str | None, *, public_demo=False) -> None:
     st.header("03 · Contrastar y actuar")
     solution = visible_solution(case, record)
     if st.button("Revelar solución y explicación", key="detective_reveal", disabled=solution is not None):
@@ -197,11 +206,16 @@ def _solution(session, case, record: dict, action: str | None) -> None:
     can_act = bool(record["answers"].get(phase)) or solution is not None
     if action is not None and action not in REQUESTS and can_act:
         if st.button("Ejecutar la acción elegida", key="detective_intervene", type="primary"):
-            response = execute_intervention(session, case, action)
-            if response.get("status") == "not_applicable":
-                st.info(response.get("error", "La acción elegida no corresponde al expediente. No se ha ejecutado otra acción."))
-            else:
-                st.rerun()
+            repeated = (record.get("intervention") or {}).get("operation") == action
+            try:
+                with public_action(public_demo and not repeated):
+                    response = execute_intervention(session, case, action)
+                if response.get("status") == "not_applicable":
+                    st.info(response.get("error", "La acción elegida no corresponde al expediente. No se ha ejecutado otra acción."))
+                else:
+                    st.rerun()
+            except PublicLimitError as error:
+                st.warning(str(error))
     elif not can_act:
         caption("Confirma una respuesta o consulta la explicación para habilitar la intervención delimitada.")
     intervention = record.get("intervention")
@@ -284,10 +298,12 @@ def render_detective(*, public_demo: bool = False) -> None:
     if open_case:
         try:
             if context not in cases:
-                with st.spinner("Abriendo el expediente: generando datos y calculando su evaluación…"):
+                with public_action(public_demo), st.spinner("Abriendo el expediente: generando datos y calculando su evaluación…"):
                     candidate = build_case(case_id, experiment_seed)
                     validate_case(candidate, template_id=case_id, seed=experiment_seed)
                     cases[context] = candidate
+        except PublicLimitError as error:
+            st.warning(str(error))
         except (ValueError, RuntimeError) as error:
             cases.pop(context, None)
             st.error(f"No se pudo abrir el expediente: {error}")
@@ -310,9 +326,9 @@ def render_detective(*, public_demo: bool = False) -> None:
             _hints(session, case, record, view)
             st.download_button("↓ Descargar evidencia disponible · JSON", _json(view), file_name=f"detective_{case_id}_{experiment_seed}_evidencia.json", mime="application/json", on_click="ignore", key="detective_download_evidence")
             st.divider()
-            action = _answer(session, case, record, view)
+            action = _answer(session, case, record, view, public_demo=public_demo)
             st.divider()
-            _solution(session, case, record, action)
+            _solution(session, case, record, action, public_demo=public_demo)
             st.download_button("↓ Descargar investigación · JSON", export_investigation(session, case), file_name=f"detective_{case_id}_{experiment_seed}_investigacion.json", mime="application/json", on_click="ignore", key="detective_download_investigation")
             st.button("Siguiente expediente", on_click=_next_case, key="detective_next")
         except ValueError as error:
