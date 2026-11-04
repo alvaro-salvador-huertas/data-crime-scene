@@ -13,12 +13,12 @@ jobs:
     timeout-minutes: 15
     steps:
       - name: Check out source
-        uses: actions/checkout@v7
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
         with:
           persist-credentials: false
 
       - name: Set up Python 3.12
-        uses: actions/setup-python@v7
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
         with:
           python-version: '3.12'
           cache: pip
@@ -32,3 +32,64 @@ jobs:
 
       - name: Run tests
         run: python -m pytest -q
+
+  security:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - name: Check out full history
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7
+        with:
+          python-version: '3.12'
+
+      - name: Install analysis tools
+        run: python -m pip install pip-audit==2.10.1 bandit==1.9.4
+
+      - name: Audit all pinned application and browser dependencies
+        run: |
+          python -m pip_audit --no-deps --disable-pip --strict -r requirements.txt -r requirements-browser.txt --format json --output "$RUNNER_TEMP/dependencies.json"
+          python - <<'PY'
+          import json, os, re
+          from pathlib import Path
+          def normalized(name):
+              return re.sub(r"[-_.]+", "-", name).lower()
+          expected = set()
+          for filename in ("requirements.txt", "requirements-browser.txt"):
+              for raw in Path(filename).read_text().splitlines():
+                  line = raw.strip()
+                  if not line or line.startswith("#") or line == "-r requirements.txt":
+                      continue
+                  if line.count("==") != 1:
+                      raise SystemExit("Unsupported requirement format; audit coverage needs review")
+                  name, version = line.split("==")
+                  expected.add((normalized(name), version))
+          report = json.loads((Path(os.environ["RUNNER_TEMP"]) / "dependencies.json").read_text())
+          rows = report["dependencies"]
+          actual = {(normalized(row["name"]), row["version"]) for row in rows}
+          if not expected or actual != expected or len(actual) != len(rows):
+              raise SystemExit("Dependency audit does not cover exactly all pinned versions")
+          if any(row.get("vulns") or row.get("skip_reason") for row in rows):
+              raise SystemExit("Vulnerabilities or skipped dependencies in audit")
+          print(f"Audit coverage verified: {len(actual)} pinned versions, no skips")
+          PY
+
+      - name: Static security analysis
+        run: python scripts/check_static_security.py
+
+      - name: Download and verify Gitleaks
+        working-directory: ${{ runner.temp }}
+        run: |
+          curl --fail --location --max-time 120 --output gitleaks.tar.gz https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz
+          echo '551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb  gitleaks.tar.gz' | sha256sum --check
+          tar --no-same-owner -xzf gitleaks.tar.gz gitleaks
+
+      - name: Scan history and checkout for secrets
+        run: |
+          "$RUNNER_TEMP/gitleaks" git --log-opts="--all" --redact --timeout=120 .
+          "$RUNNER_TEMP/gitleaks" dir --redact --timeout=120 .

@@ -2,3 +2,7 @@
 # When testing locally, override with --server.address 127.0.0.1.
 [server]
 address = "0.0.0.0"
+
+[client]
+# Detailed exceptions remain in server logs, not in a visitor's browser.
+showErrorDetails = "none"
