@@ -2,7 +2,9 @@
 
 **El modelo parece funcionar demasiado bien. Investiga si su evaluación es defendible.**
 
-Laboratorio local de machine learning con datos sintéticos, entrenamiento real en CPU e informes reproducibles. Investiga tres mecanismos: información futura, entidades compartidas y selección de variables que consulta test.
+Laboratorio interactivo de machine learning con datos sintéticos, entrenamiento real en CPU e informes reproducibles. Disponible como demo pública y aplicación local. Investiga tres mecanismos: información futura, entidades compartidas y selección de variables que consulta test.
+
+**[Probar la demo pública · interfaz en español](https://data-crime-scene-eghdf4uzpugjdkobrn4g3t.streamlit.app/)** — sin instalación ni cuenta. Si está suspendida por inactividad, pulsa el botón para despertarla y espera a que termine el arranque.
 
 | Modo | Qué puedes hacer |
 | --- | --- |
@@ -30,15 +32,19 @@ Abre **http://127.0.0.1:8501** y selecciona **Modo Detective**. Elige un expedie
 
 La instalación descarga paquetes. En el uso local, después la aplicación funciona sin conexión, sin APIs, credenciales ni recursos cloud; la telemetría de Streamlit está desactivada. Versiones fijadas y comprobadas: Python 3.12.3, NumPy 2.5.4, pandas 3.1.0, scikit-learn 1.9.1, Streamlit 1.66.1 y Plotly 7.1.0.
 
-## Demo pública preparada
+## Demo pública
 
-La entrada pública reutiliza Guiado, Laboratorio y Detective sin pedir rutas del servidor al visitante. Para probarla localmente:
+La [demo alojada en Streamlit](https://data-crime-scene-eghdf4uzpugjdkobrn4g3t.streamlit.app/) reutiliza Guiado, Laboratorio y Detective sin pedir rutas del servidor al visitante. Las configuraciones puntuales entrenan y evalúan de verdad; el estudio agregado de 90 combinaciones no se distribuye en la demo. El progreso permanece separado por sesión y no es persistente. Los cálculos ocurren en el servidor y se aplican las condiciones de telemetría del proveedor.
+
+Se comparte un presupuesto de **un cálculo simultáneo y 12 solicitudes por minuto por proceso**, con 3 segundos entre solicitudes de una misma sesión y notas de hasta 2.000 caracteres. Estos [límites de uso](docs/seguridad-demo.md) no son protección contra DDoS. Para probar la misma entrada pública localmente:
 
 ```bash
 .venv/bin/python -m streamlit run demo/streamlit_app.py --server.address 127.0.0.1 --server.port 8502
 ```
 
-Abrir **http://127.0.0.1:8502**. Esta primera preparación no incluye el estudio agregado; las configuraciones puntuales entrenan y evalúan de verdad. El progreso permanece separado por sesión y no es persistente. En alojamiento, los cálculos ocurren en el servidor y se aplican las condiciones de telemetría del proveedor. Véase [preparación, pruebas y pasos futuros](docs/demo-publica.md). **Validación de la preparación anterior:** 241 pruebas correctas y navegador a 390/1440 px con dos sesiones independientes. Esas comprobaciones locales no acreditan las prestaciones en cloud.
+Abre **http://127.0.0.1:8502**. Véase el [registro de preparación y pruebas](docs/demo-publica.md). **Validación de la preparación anterior:** 241 pruebas correctas y navegador a 390/1440 px con dos sesiones independientes. Esas comprobaciones locales no acreditan las prestaciones en cloud.
+
+**Validación publicada — 4 de noviembre de 2026:** la [CI del commit integrado `e2651ab`](https://github.com/alvaro-salvador-huertas/data-crime-scene/actions/runs/41821340440) registra **276 pruebas correctas en 53,42 s**, `pip check` y los controles de seguridad superados. La comprobación de navegador del propietario pasó en local a 390/1440 px, con sesiones aisladas, descargas e intervención real. En la demo remota se verificaron el arranque y el aviso de límites; no se ejecutó una prueba de carga ni se cotejaron sus dependencias instaladas con CI. Los resultados históricos siguientes conservan su alcance original.
 
 ## Comprobar y experimentar
 
@@ -87,4 +93,4 @@ El proyecto se desarrolló con asistencia de IA en código, revisión y document
 
 ## English summary
 
-Data Crime Scene is an offline machine-learning investigation lab with real CPU training and synthetic data. Detective Mode offers eight evidence-based case files; Guided Mode explains three leakage mechanisms; Laboratory Mode explores controls and variability across predefined seeds. Predictions and JSON reports support reproducibility. Results are educational, not production benchmarks. The UI is primarily Spanish. See the linked methodology and verification notes for limitations and checks actually performed.
+Data Crime Scene is an interactive machine-learning investigation lab with real CPU training and synthetic data. [Try the public demo](https://data-crime-scene-eghdf4uzpugjdkobrn4g3t.streamlit.app/) (interface in Spanish, no account required), or install it for offline use. Detective Mode offers eight evidence-based case files; Guided Mode explains three leakage mechanisms; Laboratory Mode explores controls and variability across predefined seeds. The public demo runs individual configurations; the aggregate study is available through the local workflow. Public calculations share a per-process budget, and session progress is not persistent. Predictions and JSON reports support reproducibility. Results are educational, not production benchmarks. See the linked methodology and verification notes for limitations and checks actually performed.
