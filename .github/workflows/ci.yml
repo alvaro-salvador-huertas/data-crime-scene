@@ -33,6 +33,15 @@ jobs:
       - name: Run tests
         run: python -m pytest -q
 
+      - name: Install browser dependencies in a clean environment
+        run: |
+          python -m venv "$RUNNER_TEMP/browser-dependencies"
+          "$RUNNER_TEMP/browser-dependencies/bin/python" -m pip install -r requirements-browser.txt
+
+      - name: Check browser dependency consistency
+        run: |
+          "$RUNNER_TEMP/browser-dependencies/bin/python" -m pip check
+
   security:
     runs-on: ubuntu-24.04
     timeout-minutes: 15
