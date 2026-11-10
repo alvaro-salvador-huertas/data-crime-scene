@@ -31,7 +31,7 @@ jobs:
         run: python -m pip check
 
       - name: Run tests
-        run: python -m pytest -q
+        run: python -m pytest -q tests prototypes/fifo
 
       - name: Install browser dependencies in a clean environment
         run: |

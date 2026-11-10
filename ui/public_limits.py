@@ -17,6 +17,7 @@ SESSION_INTERVAL_SECONDS = 3
 WINDOW_SECONDS = 60
 MAX_ACTIONS_PER_WINDOW = 12
 SESSION_BUDGET_KEY = "public_next_action_at"
+SHARED_SESSION_BUDGET_KEY = "public_shared_session_budget"
 
 
 class PublicLimitError(Exception):
@@ -34,6 +35,9 @@ class PublicBudget:
 
     @contextmanager
     def action(self, session):
+        # Opt-in Guided workers cannot use Streamlit's thread-local proxy.
+        # All modes use this same plain dict once attached to their UI session.
+        session = session.get(SHARED_SESSION_BUDGET_KEY, session)
         with self._lock:
             now = self._clock()
             while self._admitted and self._admitted[0] <= now - WINDOW_SECONDS:

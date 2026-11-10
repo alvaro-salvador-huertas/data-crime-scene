@@ -1,6 +1,7 @@
 """Interfaz local. El motor de los experimentos se ejecuta también sin Streamlit."""
 
 from html import escape
+import os
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -179,6 +180,11 @@ def main(*, public_demo: bool = False) -> None:
         if public_demo:
             caption("Demo pública · datos sintéticos · cálculo en el servidor. Sin cuentas; el progreso de esta sesión no es persistente.")
             caption("Uso compartido: un cálculo simultáneo, hasta 12 solicitudes por minuto entre todas las sesiones y 3 segundos entre tus solicitudes.")
+            if os.environ.get("DCS_GUIDED_FIFO", "0") == "1":
+                from ui.guided_fifo import attach_session_budget
+
+                attach_session_budget(st.session_state)
+                caption("Guiado acepta trabajos en una cola acotada; el presupuesto limita sus inicios. Laboratorio y Detective mantienen el rechazo inmediato.")
         _render_main(public_demo=public_demo)
 
 
@@ -194,6 +200,11 @@ def _render_main(*, public_demo: bool = False) -> None:
         from ui.laboratory import render_laboratory
 
         render_laboratory(public_demo=public_demo)
+        return
+    if public_demo and os.environ.get("DCS_GUIDED_FIFO", "0") == "1":
+        from ui.guided_fifo_view import render_guided_fifo
+
+        render_guided_fifo()
         return
     case_ids = list(CASES)
     with st.sidebar, st.container(key="dcs_guided_controls"):
