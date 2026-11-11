@@ -36,7 +36,7 @@ scikit-learn==1.9.1
 scipy==1.18.1
 six==1.17.0
 starlette==1.10.0
-streamlit==1.66.1
+streamlit==1.67.0
 threadpoolctl==3.7.0
 typing_extensions==4.16.0
 tzdata==2026.6
